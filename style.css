@@ -39,7 +39,7 @@ p{
 }
 .axis .tick line{
     stroke:rgb(180,180,180);
-    stroke-width:1px;
+    stroke-width:3px;
 }
 .axis .tick text{
     font-size:10px;
