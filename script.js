@@ -13,9 +13,19 @@ var plot = d3.select('#plot')
     .attr('class','plot-area')
     .attr('transform','translate('+margin.l+','+margin.t+')');
 
+//
+
+
 //Initialize axes
 //Consult documentation here https://github.com/mbostock/d3/wiki/SVG-Axes
 var scaleX,scaleY,scaleY2;
+
+var tip = d3.select("body")
+    .append('tip')
+    .attr('class', 'd3-tip')
+    .style('opacity',0);
+
+
 
 var axisX = d3.svg.axis()
     .orient('bottom')
@@ -23,6 +33,7 @@ var axisX = d3.svg.axis()
 var axisY = d3.svg.axis()
     .orient('left')
     .tickSize(-width);
+
 
 
 //Start importing data
@@ -56,13 +67,15 @@ function dataLoaded(error, rows){
     console.log(perCapMIN, perCapMAX);
 
     scaleX = d3.scale.log().domain([perCapMIN,perCapMAX]).range([0,width]);
-    scaleY = d3.scale.linear().domain([0,500]).range([height,0]);
+    scaleY = d3.scale.linear().domain([0,250]).range([height,0]);
     //scaleY2 = d3.scale.linear().domain([minprimComple,maxprimComple]).range([height,0]);
 
 console.log(rows);
 
     axisX.scale(scaleX);
     axisY.scale(scaleY);
+
+
 
     plot.append('g')
         .attr('class','axis axis-x')
@@ -72,9 +85,19 @@ console.log(rows);
         .attr('class','axis axis-y')
         .call(axisY)
 
-    //var mouseoverName = d3. select(this);
-    //mouseoverName.text(function(d){return d.cName});
-    //console.log(newdata.cName);
+    //plot.append('rect')
+    //    .attr("class","countryLabel")
+    //    .attr('transform',function(d){
+    //        return 'translate('+scaleX(d.perCap)+','+scaleY+')'
+    //    })
+    //    .attr('x1', 892.0996828132694)
+    //    .attr('x2', 892.0996828132694)
+    //    .attr('y1',334.59165)
+    //    .attr('y2',530)
+    //    .style('fill', "red");
+
+
+
 
     var country = plot.selectAll('g')
         .data(rows)
@@ -84,24 +107,54 @@ console.log(rows);
     country.append('line')
             .attr('class','redline')
             .attr('x1',function(d){return scaleX(d.perCap) })
-            .attr('y1',function(d){return scaleY(d.urbanPopu)})
+            .attr('y1',function(d){if(d.urbanPopu == undefined){return height;} else{return scaleY(d.urbanPopu)}})
             .attr('x2',function(d){return scaleX(d.perCap)})
             .attr('y2',height)
-            .style('stroke','red')
+            .style('stroke','rgb(255, 204, 0)')
             .style('stroke-width',3)
+        .on('mouseover',function(d){
+            d3.select(".countryLabel")
+                .append("text")
+                .text(function(d){return(d.cName)})
+                .transition()
+                .style('opacity',1)
+            tip.transition()
+                .duration(100)
+                .style("opacity", 0.9);
+            tip.html(d.cName+':'+d.urbanPopu);
+        }
+    )
+            .on('mouseout',function(){
+                tip.transition()
+                    .duration(100)
+                    .style("opacity", 0);
+            }
+        )
+
+
     country.append('line')
             .attr('class','blueline')
             .attr('transform','translate('+6+','+0+')')
             .attr('x1',function(d){return scaleX(d.perCap)})
-            .attr('y1',function(d){return scaleY(d.primComple)})
+            .attr('y1',function(d){if (d.primComple == undefined){return height;} else{return d.primComple}})
             .attr('x2',function(d){return scaleX(d.perCap)})
             .attr('y2',height)
-            .style('stroke','blue')
+            .style('stroke','rgb(51, 102, 153)')
             .style('stroke-width',3)
-        //.on('mouseover',mouseoverName)
+            .on('mouseover',function(d){
+                    tip.transition()
+                        .duration(100)
+                        .style("opacity", 0.9);
+                    tip.html(d.cName+':'+d.primComple)
 
-
-    console.log(country);
+                    }
+            )
+        .on('mouseout',function(){
+            tip.transition()
+                .duration(100)
+                .style("opacity", 0);
+        }
+    )
 
     }
 
